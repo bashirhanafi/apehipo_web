@@ -31,6 +31,11 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 $routes->resource('product');
+$routes->resource('dashboard');
+$routes->resource('auth');
+$routes->put('product/status', 'Product::ubah');
+$routes->post('product/ubah/(:any)', 'Product::update/$1');
+
 // $routes->post('/', 'Product')
 
 /*

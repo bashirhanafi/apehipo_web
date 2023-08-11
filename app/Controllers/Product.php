@@ -11,26 +11,76 @@ class Product extends ResourceController
 {
     use RequestTrait;
 
+    // protected $table            = 'product';
+    // protected $primaryKey       = 'kode';
+    // protected $allowedFields    = ['nama', 'jenis', 'harga', 'stok', 'deskripsi', 'foto', "klasifikasi", "status", "id_user"];
+
     // all users
     public function index()
     {
         $model = new ProductModel();
-        $data = $model->getAllData();
-        return $this->respond($data);
+        $data2 = $model->getDataStatus("tampil", "0001");
+        $data3 = $model->getDataStatus("arsip", "0001");
+        $response1 = [];
+        $response2 = [];
+        foreach ($data2 as $row ) {
+            $response1[] = array(
+                'kode' => $row->kode,
+                'nama' => $row->nama,
+                'jenis' => $row->jenis,
+                'harga' => $row->harga,
+                'stok' => $row->stok,
+                'deskripsi' => $row->deskripsi,
+                'foto' => base_url('gambar/'.$row->foto),
+                'klasifikasi' => $row->klasifikasi,
+                'status' => $row->status,
+                'id_user' => $row->id_user
+            );
+        }
+        foreach ($data3 as $row ) {
+            $response2[] = array(
+                'kode' => $row->kode,
+                'nama' => $row->nama,
+                'jenis' => $row->jenis,
+                'harga' => $row->harga,
+                'stok' => $row->stok,
+                'deskripsi' => $row->deskripsi,
+                'foto' => base_url('gambar/'.$row->foto),
+                'klasifikasi' => $row->klasifikasi,
+                'status' => $row->status,
+                'id_user' => $row->id_user
+            );
+        }
+        $hasil = [
+            'data_tampil' => $response1,
+            'data_arsip' => $response2,
+        ];
+
+        return $this->respond($hasil);
     }
 
     public function create()
     {
         $model = new ProductModel();
+
+        // 
+        $id_sebelumnya = $model->getLastId();
+        $id_selanjutnya = $model->getNextId($id_sebelumnya);
+    
+        //proses upload
+        $gambar = $this->request->getFile('foto');
+        $namaGambar = $gambar->getRandomName();
+        $gambar->move('gambar', $namaGambar);
         $data = [
-            'kode' => $this->request->getVar('kode'),
-            'nama' => $this->request->getVar('nama'),
-            'jenis' => $this->request->getVar('jenis'),
-            'harga' => $this->request->getVar('harga'),
-            'stok' => $this->request->getVar('stok'),
-            'deskripsi' => $this->request->getVar('deskripsi'),
-            'foto' => $this->request->getVar('foto'),
-            'id_kebun' => $this->request->getVar('id_kebun'),
+            'kode' => $id_selanjutnya,
+            'nama' => esc($this->request->getVar('nama')),
+            'jenis' => esc($this->request->getVar('jenis')),
+            'harga' => esc($this->request->getVar('harga')),
+            'stok' => esc($this->request->getVar('stok')),
+            'deskripsi' => esc($this->request->getVar('deskripsi')),
+            'foto' => $namaGambar,
+            'status' => esc($this->request->getVar('status')),
+            'id_user' => esc($this->request->getVar('id_user')),
         ];
         $model->insertData($data);
         $response = [
@@ -59,10 +109,23 @@ class Product extends ResourceController
     public function update($id = null)
     {
         $model = new ProductModel();
+
+        // proses upload gambars
+        $gambar = $this->request->getFile('foto');
+        $namaGambar = $gambar->getRandomName();
+        $gambar->move('gambar', $namaGambar);
         $data = [
-            'nama_produk' => $this->request->getRawInput('nama'),
+            'nama' => $this->request->getVar('nama'),
+            'jenis' => $this->request->getVar('jenis'),
+            'harga' => $this->request->getVar('harga'),
+            'stok' => $this->request->getVar('stok'),
+            'deskripsi' => $this->request->getVar('deskripsi'),
+            'klasifikasi' => $this->request->getVar('klasifikasi'),
+            'status' => $this->request->getVar('status'),
+            'id_user' => $this->request->getVar('id_user'),
+            'foto' => $namaGambar,
         ];
-        $model->updateData($id, $data);
+        $model->update($id, $data);
         $response = [
             'status' => $data,
             'error' => null,
@@ -70,6 +133,23 @@ class Product extends ResourceController
                 'success' => 'Data produk berhasil diubah'
             ]
         ];
+        return $this->respondUpdated($response);
+    }
+
+    public function ubah($id = null) {
+        $model = new ProductModel;
+        $data = [
+            'status' => $this->request->getVar('status')
+        ];
+        $model->update($id, $data);
+        $response= [
+            'status'   => 200,
+            'error'    => null,
+            'messages' => [
+                'success' => 'Data produk berhasil diubah.'
+            ]
+        ];
+
         return $this->respondUpdated($response);
     }
 
