@@ -30,10 +30,16 @@ $routes->set404Override();
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
-$routes->resource('product');
+
+// dashboard
 $routes->resource('dashboard');
+
+// auth
 $routes->resource('auth');
-$routes->put('product/status', 'Product::ubah');
+
+// product
+$routes->resource('product');
+$routes->post('product/status/(:any)', 'Product::ubah/$1');
 $routes->post('product/ubah/(:any)', 'Product::update/$1');
 
 // $routes->post('/', 'Product')
